@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Нове замовлення</title>
+</head>
+<body>
+    <h1>Нове замовлення</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Зберегти</button>
+    </form>
+    <a href="{% url 'home' %}">← На головну</a>
+</body>
+</html>

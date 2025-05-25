@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Головна - Замовлення</title>
+</head>
+<body>
+    <h1>Список замовлень (з Google Таблиці)</h1>
+    <a href="{% url 'create_order' %}">+ Створити нове замовлення</a>
+    
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                {% if orders %}
+                    {% for key in orders.0.keys %}
+                        <th>{{ key }}</th>
+                    {% endfor %}
+                {% else %}
+                    <th>Немає замовлень</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                <tr>
+                    {% for value in order.values %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
