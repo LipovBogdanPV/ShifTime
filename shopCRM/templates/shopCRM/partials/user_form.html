@@ -1,0 +1,23 @@
+<h3 style="margin-top: 0;">{{ title }}</h3>
+<hr>
+<form id="crmUserRegForm" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-grid">
+        {% for field in form %}
+            <div class="form-group">
+                <label><strong>{{ field.label }}</strong></label>
+                {{ field }}
+                {% if field.help_text %}
+                    <small style="color: #666;">{{ field.help_text }}</small>
+                {% endif %}
+                {% if field.errors %}
+                    <small style="color: red;">{{ field.errors.0 }}</small>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+    <div style="margin-top: 20px; text-align: right; border-top: 1px solid #eee; padding-top: 15px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Скасувати</button>
+        <button type="button" class="btn btn-add" onclick="saveUser('{{ user_id|default:'' }}')">🚀 Зберигти</button>
+    </div>
+</form>

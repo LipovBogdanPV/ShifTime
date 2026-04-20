@@ -1,0 +1,258 @@
+<style>
+	.order-details-wrap {
+		background: #ffffff;
+		border-radius: 12px;
+		border: 1px solid #e5e7eb;
+		overflow: hidden;
+	}
+
+	.order-toolbar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		padding: 14px;
+		background: #f8fafc;
+		border-bottom: 1px solid #e5e7eb;
+		align-items: center;
+	}
+
+	.order-toolbar .field {
+		min-height: 40px;
+		border: 1px solid #cbd5e1;
+		border-radius: 8px;
+		padding: 8px 10px;
+		background: #fff;
+	}
+
+	.order-toolbar .field.search {
+		min-width: 220px;
+		flex: 1;
+	}
+
+	.order-toolbar .btn {
+		border: 1px solid #2563eb;
+		color: #2563eb;
+		background: #fff;
+		border-radius: 8px;
+		min-height: 40px;
+		padding: 8px 12px;
+		cursor: pointer;
+	}
+
+	.order-table {
+		width: 100%;
+		border-collapse: collapse;
+		background: #fff;
+	}
+
+	.order-table th,
+	.order-table td {
+		padding: 10px;
+		border-bottom: 1px solid #edf2f7;
+		text-align: left;
+		vertical-align: top;
+	}
+
+	.order-table th {
+		background: #f8fafc;
+		color: #334155;
+		font-weight: 700;
+		font-size: 12px;
+		text-transform: uppercase;
+	}
+
+	.status-chip {
+		display: inline-block;
+		border-radius: 999px;
+		padding: 5px 10px;
+		border: 1px solid #cbd5e1;
+		font-size: 12px;
+		font-weight: 600;
+		background: #fff;
+	}
+
+	.status-chip.status-manufacturing {
+		border-color: #f59e0b;
+		background: #fffbeb;
+		color: #b45309;
+	}
+
+	.status-chip.status-packaging {
+		border-color: #8b5cf6;
+		background: #f5f3ff;
+		color: #6d28d9;
+	}
+
+	.status-chip.status-shipped {
+		border-color: #2563eb;
+		background: #eff6ff;
+		color: #1d4ed8;
+	}
+
+	.status-chip.status-received {
+		border-color: #10b981;
+		background: #ecfdf5;
+		color: #047857;
+	}
+
+	.status-chip.status-canceled {
+		border-color: #ef4444;
+		background: #fef2f2;
+		color: #b91c1c;
+	}
+
+	.order-details-row {
+		display: none;
+		background: #f8fafc;
+	}
+
+	.order-details-box {
+		border: 1px solid #dbe2ea;
+		border-radius: 10px;
+		padding: 12px;
+		margin: 8px 0;
+		background: #fff;
+	}
+
+	.order-action-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-top: 10px;
+	}
+
+	.order-action-row .btn {
+		border: 1px solid #cbd5e1;
+		background: #fff;
+		color: #1e293b;
+		border-radius: 8px;
+		padding: 7px 10px;
+		cursor: pointer;
+	}
+
+	.order-action-row .btn-primary {
+		border-color: #2563eb;
+		color: #2563eb;
+	}
+
+	.order-action-row .btn-success {
+		border-color: #059669;
+		color: #059669;
+	}
+
+	.order-action-row .btn-warning {
+		border-color: #d97706;
+		color: #d97706;
+	}
+</style>
+
+<div class="order-details-wrap">
+	<div class="order-toolbar">
+		<input id="ordersSearch" class="field search" type="text" value="{{ selected.q }}" placeholder="Пошук: номер, клієнт, ТТН, місто">
+
+		<input id="ordersStartDate" class="field" type="date" value="{{ selected.start_date }}">
+		<input id="ordersEndDate" class="field" type="date" value="{{ selected.end_date }}">
+
+		<select id="ordersManager" class="field">
+			<option value="">Менеджер: всі</option>
+			{% for m in managers %}
+				<option value="{{ m.id }}" {% if selected.manager_id == m.id|stringformat:'s' %}selected{% endif %}>{{ m.last_name }} {{ m.first_name }}</option>
+			{% endfor %}
+		</select>
+
+		<select id="ordersStatus" class="field">
+			<option value="">Статус: всі</option>
+			{% for key, label in status_choices %}
+				<option value="{{ key }}" {% if selected.status == key %}selected{% endif %}>{{ label }}</option>
+			{% endfor %}
+		</select>
+
+		<button type="button" class="btn" onclick="applyOrderFilters()">Застосувати</button>
+	</div>
+
+	<table class="order-table">
+		<thead>
+			<tr>
+				<th>№</th>
+				<th>ID_ZM</th>
+				<th>Менеджер</th>
+				<th>Отримувач</th>
+				<th>Нас. пункт</th>
+				<th>Час створення</th>
+				<th>ТТН</th>
+				<th>Статус</th>
+				<th>Дохід</th>
+				<th>Дії</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for order in orders %}
+				<tr>
+					<td>{{ forloop.counter }}</td>
+					<td>{{ order.order_number_global|cut:'ORD-' }}</td>
+					<td>{{ order.manager.last_name|default:'-' }} {{ order.manager.first_name|default:'' }}</td>
+					<td>{{ order.client.last_name }} {{ order.client.first_name }}<br><small>{{ order.client.phone }}</small></td>
+					<td>{{ order.client.city }}</td>
+					<td>{{ order.created_at|date:'d.m.Y, H:i' }}</td>
+					<td>{{ order.ttn|default:'-' }}</td>
+					<td><span class="status-chip status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+					<td>{{ order.net_profit }}</td>
+					<td>
+						<button type="button" class="btn" onclick="toggleOrderDetails({{ order.id }})">Деталі</button>
+						{% if request.user.is_superuser %}
+							<button type="button" class="btn" onclick="deleteOrder({{ order.id }})">Видалити</button>
+						{% endif %}
+					</td>
+				</tr>
+
+				<tr id="order-details-{{ order.id }}" class="order-details-row">
+					<td colspan="10">
+						<div class="order-details-box">
+							<strong>Товари:</strong>
+							<table class="order-table" style="margin-top: 8px;">
+								<thead>
+									<tr>
+										<th>Товар</th>
+										<th>Кількість</th>
+										<th>Ціна</th>
+										<th>Собівартість</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for item in order.items.all %}
+										<tr>
+											<td>{{ item.product.name|default:'Товар видалено' }}</td>
+											<td>{{ item.quantity }}</td>
+											<td>{{ item.price_at_moment }}</td>
+											<td>{{ item.cost_price }}</td>
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+
+							<div style="margin-top: 10px;">
+								<strong>Адреса:</strong> {{ order.client.region }}, {{ order.client.city }}, {{ order.client.post_department }}
+							</div>
+							<div style="margin-top: 6px;">
+								<strong>Статус доставки:</strong> <span id="delivery-status-{{ order.id }}">{{ order.delivery_status_text|default:'-' }}</span>
+							</div>
+
+							<div class="order-action-row">
+								<button class="btn btn-primary" type="button" onclick="openOrderEditForm({{ order.id }})">Редагувати</button>
+								<button class="btn btn-warning" type="button" onclick="trackOrderByTtn({{ order.id }})">Оновити статус ТТН</button>
+								<button class="btn btn-success" type="button" onclick="openOrderTelegramForm({{ order.id }})">Надіслати в Telegram</button>
+								{% if request.user.is_superuser %}
+									<button class="btn" type="button" onclick="deleteOrder({{ order.id }})">Видалити замовлення</button>
+								{% endif %}
+							</div>
+						</div>
+					</td>
+				</tr>
+			{% empty %}
+				<tr>
+					<td colspan="10">За обраними фільтрами замовлень не знайдено.</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>

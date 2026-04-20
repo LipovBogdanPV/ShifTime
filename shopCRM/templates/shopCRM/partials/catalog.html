@@ -1,0 +1,121 @@
+<style>
+    /* Щоб блоки не конфліктували */
+    .custom-tab-content {
+        display: none;
+    }
+
+    /* Показуємо категорію за замовчуванням */
+    #tab-categories {
+        display: block;
+    }
+    /* Основний контейнер */
+    .card {
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin: 20px;
+        padding: 20px;
+    }
+
+    /* Вкладки (Tabs) */
+    .nav-tabs {
+        display: flex;
+        border-bottom: 2px solid #e9ecef;
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+    }
+
+    .nav-link {
+        padding: 10px 20px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 16px;
+        color: #6c757d;
+        font-weight: 500;
+        transition: 0.3s;
+    }
+
+    .nav-link:hover {
+        color: #007bff;
+    }
+
+    .nav-link.active {
+        color: #007bff;
+        border-bottom: 2px solid #007bff;
+    }
+
+    /* Стилі таблиці */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .table th, .table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+
+    .table th {
+        background-color: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+    }
+
+    .table tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    /* Кнопки */
+    .btn-add {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .btn-add:hover {
+        background-color: #218838;
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-info:hover {
+        background-color: #138496;
+    }
+    .close-btn { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 20px; }
+</style>
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <button class="nav-link active" data-url="{% url 'manage_products' %}" onclick="showTab('categories', this)">Категорії</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-url="{% url 'manage_products' %}" onclick="showTab('products', this)">Товари</button>
+            </li>
+        </ul>
+    </div>
+    <!-- Контейнер для вмісту вкладок -->
+    <div class="card-body" id="content-container"> 
+        <div id="tab-categories" class="custom-tab-content">
+            {% include 'shopCRM/partials/categories.html' %}
+        </div>
+        <div id="tab-products" class="custom-tab-content">
+            {% include 'shopCRM/partials/products.html' %}
+        </div>
+    </div>
+</div>

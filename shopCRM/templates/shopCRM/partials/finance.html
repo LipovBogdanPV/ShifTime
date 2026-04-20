@@ -1,0 +1,205 @@
+{% load l10n %}
+
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;">
+    <h2 style="margin: 0;">Фінансовий звіт</h2>
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <label style="font-size: 13px; color: #64748b;">Період</label>
+        <select id="financePeriod" class="crm-input" style="width: 140px;" onchange="applyFinanceFilters()">
+            <option value="day" {% if period == 'day' %}selected{% endif %}>День</option>
+            <option value="month" {% if period == 'month' %}selected{% endif %}>Місяць</option>
+            <option value="quarter" {% if period == 'quarter' %}selected{% endif %}>Квартал</option>
+        </select>
+        <label style="font-size: 13px; color: #64748b;">Базова дата</label>
+        <input id="financeDate" class="crm-input" type="date" value="{{ reference_date }}" onchange="applyFinanceFilters()">
+        <button type="button" class="btn" onclick="applyFinanceFilters()">Оновити</button>
+    </div>
+</div>
+
+<div class="card" style="padding: 12px; margin-bottom: 12px;">
+    <div style="font-weight: 700; margin-bottom: 8px;">Статуси замовлень для розрахунку виплат та доходу</div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+        {% for value, label in status_choices %}
+            <label style="display: flex; align-items: center; gap: 6px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px 10px; border-radius: 999px;">
+                <input type="checkbox" name="finance-status" value="{{ value }}" {% if value in selected_statuses %}checked{% endif %}>
+                <span>{{ label }}</span>
+            </label>
+        {% endfor %}
+        <button type="button" class="btn" onclick="applyFinanceFilters()">Застосувати статуси</button>
+    </div>
+</div>
+
+<div style="margin-bottom: 12px; color: #334155;">
+    Період звіту: <strong>{{ start_date|date:'d.m.Y' }}</strong> - <strong>{{ end_date|date:'d.m.Y' }}</strong>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 16px;">
+    <div class="card"><strong>Замовлень (вибрані статуси)</strong><div>{{ orders_count }}</div></div>
+    <div class="card"><strong>Замовлень у періоді (всі)</strong><div>{{ period_orders_count }}</div></div>
+    <div class="card"><strong>Менеджерів у розрахунку</strong><div>{{ manager_count }}</div></div>
+    <div class="card"><strong>Днів у періоді</strong><div>{{ days_count }}</div></div>
+    <div class="card"><strong>Дохід</strong><div>{{ revenue|floatformat:2 }} грн</div></div>
+    <div class="card"><strong>Валовий прибуток</strong><div>{{ gross_profit|floatformat:2 }} грн</div></div>
+    <div class="card"><strong>Всього витрати</strong><div>{{ total_expenses|floatformat:2 }} грн</div></div>
+    <div class="card"><strong>Чистий результат</strong><div style="font-weight: 700; color: {% if net_profit >= 0 %}#166534{% else %}#b91c1c{% endif %};">{{ net_profit|floatformat:2 }} грн</div></div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; align-items: start;">
+    <div style="display: grid; gap: 12px;">
+        <div class="card" style="padding: 12px;">
+            <h3 style="margin-top: 0;">Структура витрат</h3>
+            <table class="order-table">
+                <tbody>
+                    <tr><td>Собівартість</td><td>{{ wholesale|floatformat:2 }} грн</td></tr>
+                    <tr><td>Реклама</td><td>{{ ad_expenses|floatformat:2 }} грн</td></tr>
+                    <tr><td>Ставка менеджерам</td><td>{{ base_salary|floatformat:2 }} грн</td></tr>
+                    <tr><td>% менеджерам</td><td>{{ manager_commission|floatformat:2 }} грн</td></tr>
+                    <tr><td>ФОП фіксований</td><td>{{ fop_fixed_tax|floatformat:2 }} грн</td></tr>
+                    <tr><td>ФОП % від доходу</td><td>{{ fop_income_tax|floatformat:2 }} грн</td></tr>
+                    <tr><td><strong>Разом витрати</strong></td><td><strong>{{ total_expenses|floatformat:2 }} грн</strong></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card" style="padding: 12px;">
+            <h3 style="margin-top: 0;">Витрати на рекламу</h3>
+            <form id="adExpenseForm" onsubmit="event.preventDefault(); addAdExpense();" style="display: grid; grid-template-columns: 160px 180px 1fr auto; gap: 8px; align-items: center; margin-bottom: 10px;">
+                <input class="crm-input" type="date" name="spend_date" value="{{ reference_date }}" required>
+                <input class="crm-input" type="number" name="amount" min="0" step="0.01" placeholder="Сума" required>
+                <input class="crm-input" type="text" name="comment" placeholder="Коментар">
+                <button class="btn-add" type="submit">Додати</button>
+            </form>
+
+            <div style="max-height: 260px; overflow: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <table class="order-table" style="margin: 0;">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Сума</th>
+                            <th>Коментар</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in ad_expenses_list %}
+                            <tr>
+                                <td>{{ expense.spend_date|date:'d.m.Y' }}</td>
+                                <td>{{ expense.amount|floatformat:2 }} грн</td>
+                                <td>{{ expense.comment|default:'-' }}</td>
+                                <td><button type="button" class="btn-secondary" onclick="deleteAdExpense({{ expense.id }})">Видалити</button></td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="4" style="text-align: center; color: #64748b;">Немає витрат за період</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 12px;">
+        <h3 style="margin-top: 0;">Фінансові параметри</h3>
+        <div style="font-size: 13px; color: #64748b; margin-bottom: 8px;">
+            Ставка за годину та годин на день рахуються індивідуально по кожному користувачу в таблиці нижче.
+        </div>
+        <form id="financeConfigForm" onsubmit="event.preventDefault(); saveFinanceConfig();" style="display: grid; gap: 10px;">
+            <div>
+                <label>Відсоток менеджерам від доходу</label>
+                <input class="crm-input" type="number" min="0" step="0.01" name="manager_commission_percent" value="{{ finance_config.manager_commission_percent|unlocalize }}">
+            </div>
+            <div>
+                <label>Фіксований податок ФОП за місяць</label>
+                <input class="crm-input" type="number" min="0" step="0.01" name="fop_fixed_tax_monthly" value="{{ finance_config.fop_fixed_tax_monthly|unlocalize }}">
+            </div>
+            <div>
+                <label>Податок ФОП від доходу, %</label>
+                <input class="crm-input" type="number" min="0" step="0.01" name="fop_income_tax_percent" value="{{ finance_config.fop_income_tax_percent|unlocalize }}">
+            </div>
+            <button class="btn-add" type="submit">Зберегти параметри</button>
+        </form>
+        <small style="display: block; margin-top: 8px; color: #64748b;">Після збереження звіт одразу перераховується для обраного періоду.</small>
+    </div>
+</div>
+<style>
+    .order-table td {
+        padding: 6px 8px;
+        border: 1px solid #e2e8f0;
+        
+    }
+    .order-table th input {
+        width: 50px;
+    }
+</style>
+
+<div class="card" style="padding: 12px; margin-top: 14px;">
+    <h3 style="margin-top: 0;">Користувачі та індивідуальна оплата</h3>
+    <div style="overflow: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <table class="order-table" style="margin: 0; min-width: 1520px;">
+            <thead>
+                <tr>
+                    <th>Користувач</th>
+                    <th>Ролі</th>
+                    <th>Ставка/год</th>
+                    <th>Графік Пн-Нд (год)</th>
+                    <th>%</th>
+                    <th>Враховувати</th>
+                    <th>Оновлено</th>
+                    <th>Вдалі</th>
+                    <th>Відмови</th>
+                    <th>В дорозі</th>
+                    <th>Не відправлено</th>
+                    <th>Не отримано</th>
+                    <th>Дохід (фільтр)</th>
+                    <th>Оплата ставка</th>
+                    <th>Оплата %</th>
+                    <th>Разом до виплати</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in user_rows %}
+                    <tr>
+                        <td>{{ row.user.last_name|default:'' }} {{ row.user.first_name|default:'' }}<br><small>{{ row.user.username }}</small></td>
+                        <td>
+                            {% for g in row.user.groups.all %}
+                                <span>{{ g.name }}{% if not forloop.last %}, {% endif %}</span>
+                            {% empty %}
+                                <span>-</span>
+                            {% endfor %}
+                        </td>
+                        <td><input class="crm-input" form="payroll-form-{{ row.user.id }}" type="number" step="0.01" min="0" name="hourly_rate" value="{{ row.profile.hourly_rate|unlocalize }}"></td>
+                        <td>
+                            <div style="display: grid; grid-template-columns: repeat(7, minmax(56px, 1fr)); gap: 4px; min-width: 440px;">
+                                <label style="font-size: 11px; color: #475569;">Пн<input class="crm-input" form="payroll-form-{{ row.user.id }}" type="number" step="0.25" min="0" name="monday_hours" value="{{ row.profile.monday_hours|unlocalize }}"></label>
+                                <label style="font-size: 11px; color: #475569;">Вт<input class="crm-input" form="payroll-form-{{ row.user.id }}" type="number" step="0.25" min="0" name="tuesday_hours" value="{{ row.profile.tuesday_hours|unlocalize }}"></label>
+                                <label style="font-size: 11px; color: #475569;">Ср<input class="crm-input" form="payroll-form-{{ row.user.id }}" type="number" step="0.25" min="0" name="wednesday_hours" value="{{ row.profile.wednesday_hours|unlocalize }}"></label>
+                                <label style="font-size: 11px; color: #475569;">Чт<input class="crm-input" form="payroll-form-{{ row.user.id }}" type="number" step="0.25" min="0" name="thursday_hours" value="{{ row.profile.thursday_hours|unlocalize }}"></label>
+                                <label style="font-size: 11px; color: #475569;">Пт<input class="crm-input" form="payroll-form-{{ row.user.id }}" type="number" step="0.25" min="0" name="friday_hours" value="{{ row.profile.friday_hours|unlocalize }}"></label>
+                                <label style="font-size: 11px; color: #475569;">Сб<input class="crm-input" form="payroll-form-{{ row.user.id }}" type="number" step="0.25" min="0" name="saturday_hours" value="{{ row.profile.saturday_hours|unlocalize }}"></label>
+                                <label style="font-size: 11px; color: #475569;">Нд<input class="crm-input" form="payroll-form-{{ row.user.id }}" type="number" step="0.25" min="0" name="sunday_hours" value="{{ row.profile.sunday_hours|unlocalize }}"></label>
+                            </div>
+                        </td>
+                        <td><input class="crm-input" form="payroll-form-{{ row.user.id }}" type="number" step="0.01" min="0" name="commission_percent" value="{{ row.profile.commission_percent|unlocalize }}"></td>
+                        <td style="text-align: center;"><input form="payroll-form-{{ row.user.id }}" type="checkbox" name="include_in_payroll" {% if row.profile.include_in_payroll %}checked{% endif %}></td>
+                        <td>{{ row.profile.updated_at|date:'d.m.Y H:i' }}</td>
+                        <td>{{ row.orders_success_count }}</td>
+                        <td>{{ row.orders_canceled_count }}</td>
+                        <td>{{ row.orders_in_transit_count }}</td>
+                        <td>{{ row.orders_not_sent_count }}</td>
+                        <td>{{ row.orders_not_received_count }}</td>
+                        <td>{{ row.calc_revenue|floatformat:2 }} грн<br><small>{{ row.calc_orders_count }} зам.</small></td>
+                        <td>{{ row.salary|floatformat:2 }} грн<br><small>{{ row.scheduled_hours|floatformat:2 }} год</small></td>
+                        <td>{{ row.commission|floatformat:2 }} грн</td>
+                        <td><strong>{{ row.total_pay|floatformat:2 }} грн</strong></td>
+                        <td>
+                            <form id="payroll-form-{{ row.user.id }}" onsubmit="event.preventDefault(); saveUserPayrollSettings({{ row.user.id }}, this);">
+                                <button type="submit" class="btn-secondary">Зберегти</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="17" style="text-align: center; color: #64748b;">Користувачів не знайдено</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

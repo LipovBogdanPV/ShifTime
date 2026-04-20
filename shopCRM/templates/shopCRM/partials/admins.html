@@ -1,0 +1,109 @@
+<div class="admin-section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Керування персоналом</h2>
+        {% if user.is_superuser or user.role.name == "Admin" %}
+            <button class="btn btn-add" onclick="editUser(null)">+ Додати користувача</button>
+        {% endif %}
+    </div>
+
+    <table class="crm-table">
+        <thead>
+            <tr>
+                <th>ПІБ</th>
+                <th>Роль</th>
+                <th>Email / Телефон</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users_list %}
+            <tr>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        {% if u.photo %}
+                            <img src="{{ u.photo.url }}" class="table-avatar">
+                        {% else %}
+                            <div class="table-avatar-placeholder">?</div>
+                        {% endif %}
+                        {{ u.last_name }} {{ u.first_name }}
+                    </div>
+                </td>
+                <td>
+                    <span class="badge 
+                        {% if u.is_superuser %}role-superuser
+                        {% elif u.groups.first.name == 'Адміністратор' %}role-admin
+                        {% else %}role-manager{% endif %}">
+                        {{ u.groups.first.name|default:"Користувач" }}
+                    </span>
+                </td>
+                <td>{{ u.email }}<br><small>{{ u.phone }}</small></td>
+                <td>
+                    <button class="btn-icon" title="Редагувати" onclick="editUser('{{ u.id }}')">✏️</button>
+                    
+                    {% if user.is_superuser and u.id != user.id %}
+                        <button class="btn-icon btn-delete" title="Видалити" onclick="deleteUser('{{ u.id }}', '{{ u.last_name }} {{ u.first_name }}')">🗑️</button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .crm-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .crm-table th, .crm-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+    .crm-table th { background: #f8f9fa; font-weight: 600; color: #666; }
+    
+    .table-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
+    .table-avatar-placeholder { width: 35px; height: 35px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    
+    .btn { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-weight: 500; }
+    .btn-add { background: #27ae60; color: white; }
+    .btn-icon { background: none; border: none; cursor: pointer; font-size: 18px; padding: 5px; transition: 0.2s; }
+    .btn-icon:hover { transform: scale(1.2); }
+    
+    /* Ролі */
+    .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; text-transform: uppercase; color: white; }
+    .role-superuser { background: #9b59b6; }
+    .role-admin { background: #e74c3c; }
+    .role-manager { background: #2ecc71; }
+</style>
+<hr style="margin: 40px 0; border: 0; border-top: 2px dashed #eee;">
+
+<div class="admin-section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Ролі та права доступу</h2>
+        {% if perms.crm.add_group %}
+        <button class="btn btn-add" style="background: #3498db;" onclick="editRole(null)">+ Нова роль</button>
+        {% endif %}
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+        {% for role in roles %}
+        <div class="role-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="font-size: 18px;">{{ role.name }}</strong>
+                <div>
+                    {% if perms.crm.add_group %}
+                    <button class="btn-icon" onclick="editRole('{{ role.id }}')">✏️</button>
+                    {% endif %}
+                    {% if perms.crm.delete_group %}
+                    <button class="btn-icon btn-delete" title="Видалити роль" onclick="deleteRole('{{ role.id }}', '{{ role.name }}')" style="color: #e74c3c;">🗑️</button>
+                    {% endif %}
+                </div>
+            </div>
+            <p style="font-size: 12px; color: #7f8c8d; margin-top: 10px;">
+                Дозволів: {{ role.permissions.count }}
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .role-card { background: white; padding: 20px; border-radius: 8px; border-left: 5px solid #3498db; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    /* Стиль для списку дозволів у формі */
+    .permissions-list { max-height: 300px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px; background: #fafafa; }
+    .permissions-list label { display: block; font-size: 13px; margin-bottom: 5px; cursor: pointer; }
+</style>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <title>{{ crm_name }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" id="csrf-token" />
+    <svg style="display: none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Інформаційна панель (dashboard) -->
+      <symbol id="icon-dashboard" viewBox="0 0 24 24">
+        <path d="M3 13h8V3H3v10zm10 8h8v-6h-8v6zM3 21h8v-6H3v6zm10-8h8V3h-8v10z" />
+      </symbol>
+
+      <!-- Замовлення -->
+      <symbol id="icon-orders" viewBox="0 0 24 24">
+        <path d="M3 3h18v2H3zm2 4h14l-1 14H6L5 7zm4 3v2h6v-2H9z" />
+      </symbol>
+
+      <!-- Повідомлення -->
+      <symbol id="icon-messages" viewBox="0 0 24 24">
+        <path d="M4 4h16v12H5.17L4 17.17V4zm2 2v8h12V6H6z" />
+      </symbol>
+
+      <!-- Дані замовлень (аналітика) -->
+      <symbol id="icon-analytics" viewBox="0 0 24 24">
+        <path d="M3 17h4v4H3v-4zm7-6h4v10h-4V11zm7-8h4v18h-4V3z" />
+      </symbol>
+
+      <!-- Каталог -->
+      <symbol id="icon-catalog" viewBox="0 0 24 24">
+        <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 8v-8h8v8h-8z" />
+      </symbol>
+
+      <!-- Шаблони -->
+      <symbol id="icon-templates" viewBox="0 0 24 24">
+        <path d="M4 4h16v4H4V4zm0 6h10v10H4V10zm12 0h4v10h-4V10z" />
+      </symbol>
+
+      <!-- Налаштування -->
+      <symbol id="icon-settings" viewBox="0 0 24 24">
+        <path
+          d="M19.14 12.94a7.43 7.43 0 000-1.88l2.03-1.58-2-3.46-2.39.96a7.28 7.28 0 00-1.63-.94l-.36-2.54H9.21l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96-2 3.46 2.03 1.58a7.43 7.43 0 000 1.88l-2.03 1.58 2 3.46 2.39-.96c.51.4 1.05.71 1.63.94l.36 2.54h5.58l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96 2-3.46-2.03-1.58zM12 15.5A3.5 3.5 0 1112 8a3.5 3.5 0 010 7.5z"
+        />
+      </symbol>
+
+      <!-- Клієнти -->
+      <symbol id="icon-clients" viewBox="0 0 24 24">
+        <path
+          d="M16 11a4 4 0 10-8 0 4 4 0 008 0zm-8 6c-3 0-6 1.5-6 3v2h12v-2c0-1.5-3-3-6-3zm10 0c-.73 0-1.41.08-2.03.22C17.23 17.9 18 18.9 18 20v2h4v-2c0-1.5-3-3-4-3z"
+        />
+      </symbol>
+
+      <!-- Менеджери -->
+      <symbol id="icon-managers" viewBox="0 0 24 24">
+        <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-7 8c0-3 4-5 7-5s7 2 7 5v2H5v-2z" />
+      </symbol>
+
+      <!-- Адміністратор -->
+      <symbol id="icon-admin" viewBox="0 0 24 24">
+        <path
+          d="M12 2l9 4v6c0 5-3.8 9.7-9 10-5.2-.3-9-5-9-10V6l9-4zm0 6a3 3 0 100 6 3 3 0 000-6z"
+        />
+      </symbol>
+    </svg>
+    <header>
+        <div class="logo"><strong>{{ crm_name }}</strong></div>
+        <div class="user-info">
+            {% if user.is_staff %}
+            <a href="http://127.0.0.1:8000/admin/" style="color: #fff;">БД</a>
+            {% endif %}
+            <div class="user-details">
+                <span>{{ user.last_name }} {{ user.first_name }} {{ user.middle_name }}</span>
+                {% if user.is_superuser %}
+                <span class="badge role-superuser">Суперкористувач</span>
+                {% elif user.role.name == "Admin" %}
+                <span class="badge role-admin">Адмін</span>
+                {% elif user.role.name == "Manager" %}
+                <span class="badge role-manager">Менеджер</span>
+                {% else %}
+                <span class="badge role-default">{{ user.role.name|default:"Користувач" }}</span>
+                {% endif %}
+            </div>
+                {% if user.photo %}
+                    <img src="{{ user.photo.url }}" alt="фото">
+                {% else %}
+                    <img src="/static/img/no-avatar.jpg" alt="фото">
+                {% endif %}
+                <a href="{% url 'logout' %}" style="color: #ff4d4d; text-decoration: none;">Вихід</a>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <nav class="sidebar">
+            <a href="#" data-url="{% url 'content_dashboard' %}" onclick="loadContent(this)">
+                <svg class="icon"><use href="#icon-dashboard" /></svg>
+                <span class="label">Інформаційна панель</span>
+            </a>
+            <a href="#" data-url="{% url 'content_orders' %}" onclick="loadContent(this)">
+                <svg class="icon"><use href="#icon-orders" /></svg>
+                <span class="label">Замовлення</span>
+            </a>
+            <a href="#" data-url="{% url 'content_order_details' %}" onclick="loadContent(this)">
+                <svg class="icon"><use href="#icon-analytics" /></svg>
+                <span class="label">Дані замовлень</span>
+            </a>
+            <a href="#" data-url="{% url 'manage_products' %}" onclick="loadContent(this)">
+                <svg class="icon"><use href="#icon-catalog" /></svg>
+                <span class="label">Каталог</span>
+            </a>
+            <a href="#" data-url="{% url 'content_templates' %}" onclick="loadContent(this)">
+              <svg class="icon"><use href="#icon-templates" /></svg>
+              <span class="label">Шаблони</span>
+            </a>
+            <a href="#" data-url="{% url 'content_finance' %}" onclick="loadContent(this)">
+                <svg class="icon"><use href="#icon-analytics" /></svg>
+                <span class="label">Фінанси</span>
+            </a>
+            <a href="#" data-url="" onclick="loadContent(this)">
+                <svg class="icon"><use href="#icon-analytics" /></svg>
+                <span class="label">Аналітика</span>
+            </a>
+            <a href="#" data-url="{% url 'content_admins' %}" onclick="loadContent(this)">
+                <svg class="icon"><use href="#icon-admin" /></svg>
+                <span class="label">Адміністратори</span>
+            </a>
+            <a href="#" data-url="" onclick="loadContent(this)">
+                <svg class="icon"><use href="#icon-settings" /></svg>
+                <span class="label">Налаштування</span>
+            </a>
+        </nav>
+
+        <main id="content-area">
+            <h1>Вітаємо, {{ user.first_name }}!</h1>
+            <p>Оберіть пункт меню для початку роботи.</p>
+        </main>
+    </div>
+
+    <footer>
+        &copy; 2024 {{ crm_name }} - Всі права захищені.
+    </footer>
+    <style>
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 500px; max-width: 90%; max-height: 90vh; overflow-y: auto; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        .crm-input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-top: 5px; }
+        .btn-secondary { background: #95a5a6; color: white; margin-right: 10px; }
+        .order-table .crm-input{
+            width: 40px;
+        }
+        .order-table tr td div .crm-input{
+            width: 40px;
+        }
+    </style>
+</div>
+<!-- Модальне вікно для форм -->
+<div id="modalOverlay" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <div id="modal-body">
+        </div>
+    </div>
+</div>
+    <script src="/static/js/dashboard_utils.js"></script>
+</body>
+</html>

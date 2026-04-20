@@ -1,0 +1,76 @@
+<style>
+    .permissions-container {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #fdfdfd;
+        padding: 5px;
+    }
+    .perm-item {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        transition: background 0.2s;
+    }
+    .perm-item:hover {
+        background: #f1f7ff;
+    }
+    .perm-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 4px;
+    }
+    .perm-checkbox input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+    .perm-checkbox label {
+        font-size: 14px;
+        color: #2c3e50;
+        cursor: pointer;
+    }
+    .perm-desc {
+        font-size: 12px;
+        color: #7f8c8d;
+        margin-left: 28px; /* Відступ, щоб було під текстом лабела */
+    }
+</style>
+<h3>{{ title }}</h3>
+<hr>
+<form id="crmRoleForm">
+    {% csrf_token %}
+    <div class="form-group">
+        <label><strong>Назва ролі</strong></label>
+        {{ form.name }}
+    </div>
+    
+    <label style="display: block; margin-top: 20px;"><strong>Налаштування прав:</strong></label>
+    <div class="permissions-container">
+        {% for checkbox in form.permissions %}
+            <div class="perm-item">
+                <div class="perm-checkbox">
+                    {{ checkbox.tag }}
+                    <label for="{{ checkbox.id_for_label }}"><strong>{{ checkbox.choice_label }}</strong></label>
+                </div>
+                
+                <div class="perm-desc">
+                    {% with codename=checkbox.data.value.instance.codename %}
+                        {% for key, desc in descriptions.items %}
+                            {% if key == codename %}
+                                {{ desc }}
+                            {% endif %}
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div style="margin-top: 25px; text-align: right; border-top: 1px solid #eee; padding-top: 15px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Скасувати</button>
+        <button type="submit" class="btn btn-add">Зберегти роль</button>
+    </div>
+</form>
+

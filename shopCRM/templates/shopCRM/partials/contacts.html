@@ -1,0 +1,189 @@
+<style>
+    .form-row,
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin: 0 -8px;
+    }
+
+    .col-md-4,
+    .col-6 {
+        box-sizing: border-box;
+        padding: 0 8px;
+    }
+
+    .col-md-4 {
+        flex: 0 0 31.3333%;
+        max-width: 31.3333%;
+    }
+
+    .col-6 {
+        flex: 0 0 48%;
+        max-width: 48%;
+    }
+
+    .form-group {
+        width: 100%;
+        margin-bottom: 16px;
+    }
+
+    .form-group label,
+    .form-check-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #334155;
+        font-weight: 600;
+    }
+
+    .form-control {
+        width: 100%;
+        min-height: 42px;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #1f2937;
+        font-size: 14px;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    #manual-address,
+    #np-fields {
+        border-radius: 12px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+
+    #manual-address {
+        padding: 18px;
+    }
+
+    #np-fields {
+        padding: 16px;
+    }
+
+    .mb-2 {
+        margin-bottom: 12px !important;
+    }
+
+    .city-suggestions {
+        display: none;
+        margin-top: 6px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #ffffff;
+        max-height: 220px;
+        overflow-y: auto;
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+    }
+
+    .city-suggestions.visible {
+        display: block;
+    }
+
+    .city-suggestion-item {
+        padding: 9px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #eef2f7;
+        color: #1f2937;
+    }
+
+    .city-suggestion-item:last-child {
+        border-bottom: 0;
+    }
+
+    .city-suggestion-item:hover {
+        background: #f1f5f9;
+    }
+</style>
+
+<div class="form-row">
+    <div class="form-group col-md-4">
+        <label>Прізвище</label>
+        <input type="text" class="form-control" name="last_name">
+    </div>
+    <div class="form-group col-md-4">
+        <label>Ім'я</label>
+        <input type="text" class="form-control" name="first_name">
+    </div>
+    <div class="form-group col-md-4">
+        <label>Телефон</label>
+        <input type="text" class="form-control" name="phone" placeholder="+380...">
+    </div>
+</div>
+
+<div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="foreignDelivery" onclick="toggleEmail()">
+    <label class="form-check-label" for="foreignDelivery">Доставка за кордон</label>
+</div>
+
+<div class="form-group" id="email-group" style="display: none;">
+    <label>Email (для міжнародної доставки)</label>
+    <input type="email" class="form-control" name="email">
+</div>
+
+<div class="form-group">
+    <label>Спосіб доставки</label>
+    <select name="delivery_service" id="deliverySelect" class="form-control" onchange="toggleDeliveryFields(this)">
+        <option value="nova_poshta">Нова Пошта (Автоматично)</option>
+        <option value="ukr_poshta">Укрпошта (Ручне введення)</option>
+        <option value="self_pickup">Самовивіз</option>
+        <option value="other">Інша служба</option>
+    </select>
+</div>
+
+<div id="manual-address" style="display: none; margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+    <div class="mb-2">
+        <label>Місто/Село</label>
+        <input type="text" id="manual-city-input" name="manual_city" class="form-control" placeholder="Введіть місто">
+    </div>
+    <div class="row">
+        <div class="col-6 mb-2">
+            <label>Область</label>
+            <input type="text" id="manual-region-input" name="manual_region" class="form-control" placeholder="Напр: Тернопільська">
+        </div>
+        <div class="col-6 mb-2">
+            <label>Район</label>
+            <input type="text" id="manual-district-input" name="manual_district" class="form-control" placeholder="Напр: Підволочиський">
+        </div>
+    </div>
+    <div class="mb-2">
+        <label>Відділення/Адреса</label>
+        <input type="text" id="manual-post-department-input" name="manual_post_department" class="form-control" placeholder="Номер відділення або адреса">
+    </div>
+</div>
+
+<div id="np-fields" style="; border: 1px solid #ddd; padding: 10px; border-radius: 5px; margin-top: 15px;">
+    <div class="mb-2">
+        <label>Місто/Село</label>
+        <input type="text" id="city-input" name="city" class="form-control" autocomplete="off" placeholder="Почніть вводити місто...">
+        <div id="citySuggestions" class="city-suggestions"></div>
+    </div>
+    <div>
+        <label>Район</label>
+        <input type="text" id="district-input" class="form-control" placeholder="Заповниться автоматично" readonly>
+    </div>
+    <div>
+        <label>Область</label>
+        <input type="text" id="region-input" name="region" class="form-control" placeholder="Заповниться автоматично" readonly>
+    </div>
+    <div class="mb-2">
+        <label>Відділення</label>
+        <select id="warehouse-select" name="post_department" class="form-control">
+            <option value="">Спочатку оберіть місто...</option>
+        </select>
+    </div>
+</div>

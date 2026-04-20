@@ -1,0 +1,36 @@
+{% load auth_extras %}
+<div id="products" class="tab-content" >
+            <div class="d-flex justify-content-between mb-3">
+                <h3>Товари</h3>
+                {% if user|user_level > 20 %}
+                <button class="btn btn-add" onclick="openModal('{% url 'get_product_form_empty' %}')">+ Додати товар</button>
+                {% endif %}
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Назва</th>
+                        <th>Категорія</th>
+                        <th>Розмір</th>
+                        <th>Ціна</th>
+                        <th>Дії</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prod in products %}
+                    <tr>
+                        <td>{{ prod.name }}</td>
+                        <td>{{ prod.category.name }}</td>
+                        <td>{{ prod.size }}</td>
+                        <td>{{ prod.selling_price }} грн</td>
+                        <td>
+                            {% if user|user_level > 20 %}
+                            <button class="btn btn-sm btn-info" onclick="openModal('{% url 'get_product_form' prod.id %}')">Ред.</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteItem('{% url 'delete_product' prod.id %}')">Видалити</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>

@@ -1,0 +1,47 @@
+<h3 style="margin-top: 0;">Надіслати замовлення {{ order.order_number_global|cut:'ORD-' }} в Telegram</h3>
+
+<form id="orderTelegramForm" onsubmit="event.preventDefault(); sendOrderToTelegram({{ order.id }});">
+    <div style="margin-bottom: 10px;">
+        <label>Варіант шаблону</label>
+        <select class="crm-input" id="orderTemplateSelect" name="template_id" onchange="refreshOrderTemplatePreview({{ order.id }})">
+            <option value="">Базовий шаблон</option>
+            {% for tpl in templates %}
+                <option value="{{ tpl.id }}" {% if selected_template_id == tpl.id %}selected{% endif %}>{{ tpl.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label>Chat ID</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <input id="telegramChatIdInput" class="crm-input" style="flex: 1;" type="text" name="chat_id" value="{{ default_chat_id }}" placeholder="Наприклад: -1001234567890">
+            <a id="telegramOpenLink" class="btn-secondary" href="https://web.telegram.org/a/#{{ default_chat_id }}" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">Відкрити в Telegram</a>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label>Текст повідомлення</label>
+        <textarea class="crm-input" name="message_text" rows="14">{{ message_text }}</textarea>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button type="button" class="btn-secondary" onclick="closeModal()">Скасувати</button>
+        <button type="submit" class="btn-add">Надіслати</button>
+    </div>
+</form>
+
+<script>
+    (function () {
+        const chatInput = document.getElementById('telegramChatIdInput');
+        const openLink = document.getElementById('telegramOpenLink');
+        if (!chatInput || !openLink) return;
+
+        const updateLink = () => {
+            const chatId = (chatInput.value || '').trim();
+            openLink.href = chatId ? `https://web.telegram.org/a/#${encodeURIComponent(chatId)}` : 'https://web.telegram.org/';
+        };
+
+        chatInput.addEventListener('input', updateLink);
+        updateLink();
+    })();
+</script>

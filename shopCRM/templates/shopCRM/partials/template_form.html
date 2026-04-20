@@ -1,0 +1,46 @@
+<h3 style="margin-top: 0;">{{ title }}</h3>
+
+<form id="messageTemplateForm" onsubmit="event.preventDefault(); saveMessageTemplateForm({{ template_id|default:'null' }});">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start;">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div>
+                <label>Назва шаблону</label>
+                {{ form.name }}
+            </div>
+            <div>
+                <label style="display: flex; align-items: center; gap: 8px;">{{ form.is_active }} Активний</label>
+            </div>
+            <div>
+                <label>Текст шаблону</label>
+                {{ form.body }}
+            </div>
+
+            <div style="border: 1px dashed #cbd5e1; border-radius: 10px; padding: 10px; background: #f8fafc;">
+                <strong>Підтримувані змінні</strong>
+                <div style="margin-top: 8px; display: grid; grid-template-columns: 1fr; gap: 6px; font-size: 13px; color: #334155;">
+                    <div><code>{manager_order_no}</code> — номер замовлення відносно менеджера</div>
+                    <div><code>{order_number_global}</code> — глобальний номер замовлення</div>
+                    <div><code>{items_block}</code> — список товарів (кожен у новому рядку)</div>
+                    <div><code>{customer_total_block}</code> — блок наложки/вартості або порожній, якщо оплата повна</div>
+                    <div><code>{drop_price}</code> — дроп/опт сума (без націнки)</div>
+                    <div><code>{region}</code>, <code>{city}</code>, <code>{post_department}</code> — адреса доставки</div>
+                    <div><code>{recipient}</code>, <code>{phone}</code> — отримувач і телефон</div>
+                    <div><code>{ttn_block}</code> — або ТТН, або фраза "Створіть самі"</div>
+                    <div><code>{customer_request}</code> — побажання клієнта</div>
+                    <div><code>{separator}</code> — декоративний розділювач</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 700;">Попередній перегляд</label>
+            <div id="templatePreviewBox" style="white-space: pre-wrap; min-height: 420px; max-height: 520px; overflow: auto; border: 1px solid #cbd5e1; border-radius: 10px; background: #0b1220; color: #e2e8f0; padding: 12px; font-family: Consolas, 'Courier New', monospace;"></div>
+            <small style="color: #64748b;">Прев'ю показує як виглядатиме шаблон на тестових даних.</small>
+        </div>
+    </div>
+
+    <div style="margin-top: 12px; display: flex; justify-content: flex-end; gap: 8px;">
+        <button type="button" class="btn-secondary" onclick="closeModal()">Скасувати</button>
+        <button type="submit" class="btn-add">Зберегти</button>
+    </div>
+</form>

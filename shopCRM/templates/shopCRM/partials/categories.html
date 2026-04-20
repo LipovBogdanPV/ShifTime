@@ -1,0 +1,32 @@
+{% load auth_extras %}
+<div id="categories" class="tab-content">
+    <div class="d-flex justify-content-between mb-3">
+        <h3>Категорії</h3>
+        {% if user|user_level > 20 %}
+        <button class="btn btn-add" onclick="openModal('{% url "get_category_form_empty" %}')">+ Додати категорію</button>
+        {% endif %}
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Назва</th>
+                <th>Батьківська категорія</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cat in categories %}
+            <tr>
+                <td>{{ cat.name }}</td>
+                <td>{{ cat.parent.name|default:"-" }}</td>
+                <td>
+                    {% if user|user_level > 20 %}
+                    <button class="btn btn-sm btn-info" onclick="openModal('{% url 'get_category_form' cat.id %}')">Ред.</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteItem('{% url 'delete_category' cat.id %}')">Видалити</button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

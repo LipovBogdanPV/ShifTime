@@ -1,0 +1,114 @@
+<h3 style="margin-top: 0;">Редагування замовлення {{ order.order_number_global|cut:'ORD-' }}</h3>
+
+<form id="orderEditForm" onsubmit="event.preventDefault(); saveOrderEditForm({{ order.id }});">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+            <label>Прізвище</label>
+            <input class="crm-input" type="text" name="last_name" value="{{ order.client.last_name }}">
+        </div>
+        <div>
+            <label>Ім'я</label>
+            <input class="crm-input" type="text" name="first_name" value="{{ order.client.first_name }}">
+        </div>
+        <div>
+            <label>По батькові</label>
+            <input class="crm-input" type="text" name="middle_name" value="{{ order.client.middle_name }}">
+        </div>
+        <div>
+            <label>Телефон</label>
+            <input class="crm-input" type="text" name="phone" value="{{ order.client.phone }}">
+        </div>
+        <div>
+            <label>Email</label>
+            <input class="crm-input" type="email" name="email" value="{{ order.client.email|default:'' }}">
+        </div>
+        <div>
+            <label>Платформа</label>
+            <select class="crm-input" name="platform">
+                {% for key, label in platform_choices %}
+                    <option value="{{ key }}" {% if order.platform == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Служба доставки</label>
+            <select class="crm-input" name="delivery_service">
+                {% for key, label in delivery_services %}
+                    <option value="{{ key }}" {% if order.delivery_service == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Статус</label>
+            <select class="crm-input" name="status">
+                {% for key, label in status_choices %}
+                    <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>ТТН</label>
+            <input class="crm-input" type="text" name="ttn" value="{{ order.ttn|default:'' }}">
+        </div>
+        <div>
+            <label>Передоплата</label>
+            <input class="crm-input" type="number" step="0.01" name="prepayment_amount" value="{{ order.prepayment_amount }}">
+        </div>
+        <div style="grid-column: 1 / span 2;">
+            <label>Область</label>
+            <input class="crm-input" type="text" name="region" value="{{ order.client.region }}">
+        </div>
+        <div style="grid-column: 1 / span 2;">
+            <label>Місто</label>
+            <input class="crm-input" type="text" name="city" value="{{ order.client.city }}">
+        </div>
+        <div style="grid-column: 1 / span 2;">
+            <label>Відділення/Адреса</label>
+            <input class="crm-input" type="text" name="post_department" value="{{ order.client.post_department }}">
+        </div>
+        <div style="grid-column: 1 / span 2;">
+            <label>Опис гравіювання</label>
+            <textarea class="crm-input" name="engraving_description">{{ order.engraving_description }}</textarea>
+        </div>
+        <div style="grid-column: 1 / span 2;">
+            <label>Побажання клієнта</label>
+            <textarea class="crm-input" name="customer_request">{{ order.customer_request }}</textarea>
+        </div>
+    </div>
+
+    <hr>
+    <h4>Товари замовлення</h4>
+    <div id="order-items-editor" style="display: flex; flex-direction: column; gap: 8px;">
+        {% for item in order.items.all %}
+            <div class="item-row" style="display: grid; grid-template-columns: 2fr 120px 100px; gap: 8px; align-items: center;">
+                <select class="crm-input" name="item_product">
+                    {% for product in products %}
+                        <option value="{{ product.id }}" {% if item.product_id == product.id %}selected{% endif %}>{{ product.name }}</option>
+                    {% endfor %}
+                </select>
+                <input class="crm-input" type="number" min="1" name="item_quantity" value="{{ item.quantity }}">
+                <button type="button" class="btn-secondary" onclick="this.closest('.item-row').remove()">Видалити</button>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div style="margin-top: 10px; display: flex; justify-content: space-between; gap: 8px;">
+        <button type="button" class="btn-secondary" onclick="addOrderItemRow()">+ Додати товар</button>
+        <div>
+            <button type="button" class="btn-secondary" onclick="closeModal()">Скасувати</button>
+            <button type="submit" class="btn-add">Зберегти</button>
+        </div>
+    </div>
+</form>
+
+<template id="order-item-row-template">
+    <div class="item-row" style="display: grid; grid-template-columns: 2fr 120px 100px; gap: 8px; align-items: center;">
+        <select class="crm-input" name="item_product">
+            {% for product in products %}
+                <option value="{{ product.id }}">{{ product.name }}</option>
+            {% endfor %}
+        </select>
+        <input class="crm-input" type="number" min="1" name="item_quantity" value="1">
+        <button type="button" class="btn-secondary" onclick="this.closest('.item-row').remove()">Видалити</button>
+    </div>
+</template>

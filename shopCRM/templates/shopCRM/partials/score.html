@@ -1,0 +1,134 @@
+<style>
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin: 0 -8px;
+    }
+
+    .col-md-7,
+    .col-md-5 {
+        box-sizing: border-box;
+        padding: 0 8px;
+    }
+
+    .col-md-7 {
+        flex: 0 0 58.3333%;
+        max-width: 58.3333%;
+    }
+
+    .col-md-5 {
+        flex: 0 0 41.6667%;
+        max-width: 41.6667%;
+    }
+
+    h5 {
+        margin-top: 0;
+        margin-bottom: 18px;
+        color: #0f172a;
+        font-size: 18px;
+    }
+
+    #catalog-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .btn {
+        border-radius: 10px;
+        padding: 10px 14px;
+        border: 1px solid #1d4ed8;
+        background: transparent;
+        color: #1d4ed8;
+        cursor: pointer;
+        transition: 0.2s ease;
+        font-size: 13px;
+    }
+
+    .btn:hover {
+        background: rgba(29, 78, 216, 0.1);
+    }
+
+    #order-items-list {
+        min-height: 120px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #334155;
+        font-weight: 600;
+    }
+
+    .form-control {
+        width: 100%;
+        min-height: 42px;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #1f2937;
+        font-size: 14px;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-7">
+        <h5>Каталог</h5>
+        <div id="category-path" class="mb-2"></div> <div id="catalog-container" class="d-flex flex-wrap gap-2">
+            {% for cat in root_categories %}
+                <button class="btn btn-outline-primary" onclick="loadCatalog({{ cat.id }})">{{ cat.name }}</button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="col-md-5" style="border-left: 1px solid #ddd;">
+        <h5>Поточне замовлення</h5>
+        <div id="order-items-list" class="mb-3">
+            </div>
+        
+        <hr>
+        <div class="form-group mb-2">
+            <label>Платформа:</label>
+            <select name="platform" class="form-control">
+                <option value="instagram">Instagram</option>
+                <option value="tiktok">TikTok</option>
+                <option value="olx">OLX</option>
+                <option value="prom">Prom</option>
+                <option value="other">Інша</option>
+            </select>
+        </div>
+        <div class="form-group mb-2">
+            <label>Опис гравіювання / друку</label>
+            <textarea name="engraving_description" class="form-control" rows="3" placeholder="Вкажіть текст, малюнок або побажання для гравіювання..."></textarea>
+        </div>
+        <div class="form-group mb-2">
+            <label>Побажання клієнта / додаткова інформація</label>
+            <textarea name="customer_request" class="form-control" rows="3" placeholder="Наприклад: термінове виконання, упаковка тощо"></textarea>
+        </div>
+        <div class="form-group mb-2">
+            <label>Передоплата (грн):</label>
+            <input type="number" name="prepayment_amount" id="prepayment-input" class="form-control" value="0" oninput="calculateTotal()">
+        </div>
+        <h6>Загальна сума: <span id="total-price">0</span> грн</h6>
+        <h6>До оплати: <span id="remaining-price">0</span> грн</h6>
+        <div style="display: flex; gap: 10px; margin-top: 12px;">
+            <button type="button" class="btn btn-outline-primary" style="flex: 1;" onclick="submitOrder()">
+                Оформити замовлення
+            </button>
+            <button type="button" class="btn" style="flex: 1; border-color: #ef4444; color: #ef4444;" onclick="clearOrderDraftData()">
+                Очистити
+            </button>
+        </div>
+    </div>
+</div>
